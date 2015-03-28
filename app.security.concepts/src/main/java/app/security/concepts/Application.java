@@ -1,6 +1,5 @@
 package app.security.concepts;
 
-import java.io.File;
 import java.io.InputStream;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -11,6 +10,7 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -30,30 +30,52 @@ public class Application {
 
 						Document document = app.readXML(FILE_NAME);
 						app.listEachObjectWithTheirSubjects(document);
+						// app.printDocument(document);
 				} catch (Exception ex) {
 						System.out.println(ex.getMessage());
 				}
 		}
 
+		/**
+		 * List all objects with the subjects that can be access
+		 * 
+		 * @param document
+		 */
 		public void listEachObjectWithTheirSubjects(Document document) {
-				XPath xpath = XPathFactory.newInstance().newXPath();
-				NodeList list;
+
 				try {
-						list = (NodeList) xpath.evaluate("/filesystem/object/acl", document,
-										XPathConstants.NODESET);
-						int len = list.getLength();
-						for (int i = 0; i < len; i++) {
-								// Get the ACE node
-								Node aclNode = list.item(i);
-								int lenofACL = aclNode.getChildNodes().getLength();
-								for (int j = 0; j < lenofACL; j++) {
-										if (j == 0) {
-												Node parentParent = aclNode.getParentNode();
-												System.out.println("--" + parentParent.getAttributes().getNamedItem("name").getNodeValue());
+						document.getDocumentElement().normalize();
+						XPath xPath = XPathFactory.newInstance().newXPath();
+						String expression = "/filesystem/object";
+						NodeList objectNodeList = (NodeList) xPath.compile(expression).evaluate(document,
+						    XPathConstants.NODESET);
+
+						// Run the process for all object nodes
+						for (int i = 0; i < objectNodeList.getLength(); i++) {
+								// Get the particular object node
+								Node objectNode = objectNodeList.item(i);
+								// Check if the node is an Element Node
+								if (objectNode.getNodeType() == Node.ELEMENT_NODE) {
+										// Cast the node to element to get the attributes
+										Element objectElement = (Element) objectNode;
+										System.out.println("obj:" + objectElement.getAttribute("name"));
+										// Get the ACL element (One ACL element is there so directly access
+										// the 0th item)
+										Node nodeACL = objectElement.getElementsByTagName("acl").item(0);
+										int length = nodeACL.getChildNodes().getLength();
+										// Run the process for all ACE nodes
+										for (int j = 0; j < length; j++) {
+												Node nodeACE = nodeACL.getChildNodes().item(j);
+												// Check if the node is an Element Node
+												if (nodeACE.getNodeType() == Node.ELEMENT_NODE) {
+														// If you need to access the attribute or text value inside the
+														// node you have to cast to Element
+														Element elementACE = (Element) nodeACE;
+														System.out.println("--->sub:" + elementACE.getAttribute("subject"));
+												}
 										}
-										Node aceNode = aclNode.getChildNodes().item(j);
-										Node subject = aceNode.getAttributes().getNamedItem("subject");
-										System.out.println("---" + subject.getNodeValue());
+
+										System.out.println();
 								}
 						}
 				} catch (XPathExpressionException e) {
@@ -80,4 +102,5 @@ public class Application {
 						return null;
 				}
 		}
+
 }
