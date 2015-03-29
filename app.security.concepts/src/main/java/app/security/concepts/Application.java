@@ -59,6 +59,7 @@ public class Application {
 						for (int i = 0; i < objectNodeList.getLength(); i++) {
 								// Get the particular object node
 								Node objectNode = objectNodeList.item(i);
+								
 								// Check if the node is an Element Node
 								if (objectNode.getNodeType() == Node.ELEMENT_NODE) {
 										// Cast the node to element to get the attributes
@@ -68,6 +69,7 @@ public class Application {
 										// the 0th item)
 										Node nodeACL = objectElement.getElementsByTagName("acl").item(0);
 										int length = nodeACL.getChildNodes().getLength();
+										
 										// Run the process for all ACE nodes
 										for (int j = 0; j < length; j++) {
 												Node nodeACE = nodeACL.getChildNodes().item(j);
@@ -123,8 +125,8 @@ public class Application {
 								expression = "/filesystem/object[acl/ace[@subject='" + user + "']]";
 								NodeList filteredObjectNodeList = (NodeList) xPath.compile(expression).evaluate(document,
 								    XPathConstants.NODESET);
+								
 								// Run the process for all object nodes
-
 								System.out.println("user:" + user);
 								for (int j = 0; j < filteredObjectNodeList.getLength(); j++) {
 										// Get the particular object node
@@ -159,7 +161,7 @@ public class Application {
 						    + "' and contains(@rights,'o')]]";
 						NodeList filteredObjectNodeList = (NodeList) xPath.compile(expression).evaluate(document,
 						    XPathConstants.NODESET);
-						// Run the process for all object nodes
+						
 						System.out.println("user:" + user);
 						for (int j = 0; j < filteredObjectNodeList.getLength(); j++) {
 								// Get the particular object node
