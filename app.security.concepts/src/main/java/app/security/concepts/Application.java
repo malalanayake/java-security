@@ -26,13 +26,14 @@ public class Application {
 		public static String FILE_NAME = "student.xml";
 
 		public static void main(String[] args) {
-				System.out.println("******Access Control List Processor*****");
 				Application app = new Application();
 				try {
 
 						Document document = app.readXML(FILE_NAME);
-						// app.listEachObjectWithTheirSubjects(document);
+						app.listEachObjectWithTheirSubjects(document);
 						app.listEachSubjectWithTheirObjects(document);
+						app.listAllObjectsOwnsBy(document, "bob");
+
 				} catch (Exception ex) {
 						System.out.println(ex.getMessage());
 				}
@@ -44,6 +45,8 @@ public class Application {
 		 * @param document
 		 */
 		public void listEachObjectWithTheirSubjects(Document document) {
+
+				System.out.println("\n\n*********List Object with Their Subjects**********");
 
 				try {
 						document.getDocumentElement().normalize();
@@ -93,6 +96,8 @@ public class Application {
 		 */
 		public void listEachSubjectWithTheirObjects(Document document) {
 
+				System.out.println("\n\n*********List Subject with Their Objects**********");
+
 				try {
 						document.getDocumentElement().normalize();
 						XPath xPath = XPathFactory.newInstance().newXPath();
@@ -132,6 +137,41 @@ public class Application {
 										}
 								}
 						}
+				} catch (XPathExpressionException e) {
+						e.printStackTrace();
+				}
+
+		}
+
+		/**
+		 * List each object that is own by the given subject
+		 * 
+		 * @param document
+		 */
+		public void listAllObjectsOwnsBy(Document document, String user) {
+
+				System.out.println("\n\n*********List All Objects Owns By " + user + "***********");
+
+				try {
+						XPath xPath = XPathFactory.newInstance().newXPath();
+						// Xpath expression for select the given user with Own rights
+						String expression = "/filesystem/object[acl/ace[@subject='" + user
+						    + "' and contains(@rights,'o')]]";
+						NodeList filteredObjectNodeList = (NodeList) xPath.compile(expression).evaluate(document,
+						    XPathConstants.NODESET);
+						// Run the process for all object nodes
+						System.out.println("user:" + user);
+						for (int j = 0; j < filteredObjectNodeList.getLength(); j++) {
+								// Get the particular object node
+								Node objectNode = filteredObjectNodeList.item(j);
+								// Check if the node is an Element Node
+								if (objectNode.getNodeType() == Node.ELEMENT_NODE) {
+										// Cast the node to element to get the attributes
+										Element objectElement = (Element) objectNode;
+										System.out.println("----->object:" + objectElement.getAttribute("name"));
+								}
+						}
+
 				} catch (XPathExpressionException e) {
 						e.printStackTrace();
 				}
