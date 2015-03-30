@@ -23,180 +23,180 @@ import org.w3c.dom.NodeList;
  *
  */
 public class Application {
-		public static String FILE_NAME = "student.xml";
+	public static String FILE_NAME = "student.xml";
 
-		public static void main(String[] args) {
-				Application app = new Application();
-				try {
+	public static void main(String[] args) {
+		Application app = new Application();
+		try {
 
-						Document document = app.readXML(FILE_NAME);
-						app.listEachObjectWithTheirSubjects(document);
-						app.listEachSubjectWithTheirObjects(document);
-						app.listAllObjectsOwnsBy(document, "bob");
+			Document document = app.readXML(FILE_NAME);
+			app.listEachObjectWithTheirSubjects(document);
+			app.listEachSubjectWithTheirObjects(document);
+			app.listAllObjectsOwnsBy(document, "bob");
 
-				} catch (Exception ex) {
-						System.out.println(ex.getMessage());
-				}
+		} catch (Exception ex) {
+			System.out.println(ex.getMessage());
 		}
+	}
 
-		/**
-		 * List all objects with the subjects that can be access
-		 * 
-		 * @param document
-		 */
-		public void listEachObjectWithTheirSubjects(Document document) {
+	/**
+	 * List all objects with the subjects that can be access
+	 * 
+	 * @param document
+	 */
+	public void listEachObjectWithTheirSubjects(Document document) {
 
-				System.out.println("\n\n*********List Object with Their Subjects**********");
+		System.out.println("\n\n*********List Object with Their Subjects**********");
 
-				try {
-						document.getDocumentElement().normalize();
-						XPath xPath = XPathFactory.newInstance().newXPath();
-						String expression = "/filesystem/object";
-						NodeList objectNodeList = (NodeList) xPath.compile(expression).evaluate(document,
-						    XPathConstants.NODESET);
+		try {
+			document.getDocumentElement().normalize();
+			XPath xPath = XPathFactory.newInstance().newXPath();
+			String expression = "/filesystem/object";
+			NodeList objectNodeList = (NodeList) xPath.compile(expression).evaluate(document,
+				XPathConstants.NODESET);
 
-						// Run the process for all object nodes
-						for (int i = 0; i < objectNodeList.getLength(); i++) {
-								// Get the particular object node
-								Node objectNode = objectNodeList.item(i);
-								
-								// Check if the node is an Element Node
-								if (objectNode.getNodeType() == Node.ELEMENT_NODE) {
-										// Cast the node to element to get the attributes
-										Element objectElement = (Element) objectNode;
-										System.out.println("obj:" + objectElement.getAttribute("name"));
-										// Get the ACL element (One ACL element is there so directly access
-										// the 0th item)
-										Node nodeACL = objectElement.getElementsByTagName("acl").item(0);
-										int length = nodeACL.getChildNodes().getLength();
-										
-										// Run the process for all ACE nodes
-										for (int j = 0; j < length; j++) {
-												Node nodeACE = nodeACL.getChildNodes().item(j);
-												// Check if the node is an Element Node
-												if (nodeACE.getNodeType() == Node.ELEMENT_NODE) {
-														// If you need to access the attribute or text value inside the
-														// node you have to cast to Element
-														Element elementACE = (Element) nodeACE;
-														System.out.println("--->sub:" + elementACE.getAttribute("subject"));
-												}
-										}
+			// Run the process for all object nodes
+			for (int i = 0; i < objectNodeList.getLength(); i++) {
+				// Get the particular object node
+				Node objectNode = objectNodeList.item(i);
 
-										System.out.println();
-								}
+				// Check if the node is an Element Node
+				if (objectNode.getNodeType() == Node.ELEMENT_NODE) {
+					// Cast the node to element to get the attributes
+					Element objectElement = (Element) objectNode;
+					System.out.println("obj:" + objectElement.getAttribute("name"));
+					// Get the ACL element (One ACL element is there so directly access
+					// the 0th item)
+					Node nodeACL = objectElement.getElementsByTagName("acl").item(0);
+					int length = nodeACL.getChildNodes().getLength();
+
+					// Run the process for all ACE nodes
+					for (int j = 0; j < length; j++) {
+						Node nodeACE = nodeACL.getChildNodes().item(j);
+						// Check if the node is an Element Node
+						if (nodeACE.getNodeType() == Node.ELEMENT_NODE) {
+							// If you need to access the attribute or text value inside the
+							// node you have to cast to Element
+							Element elementACE = (Element) nodeACE;
+							System.out.println("--->sub:" + elementACE.getAttribute("subject"));
 						}
-				} catch (XPathExpressionException e) {
-						e.printStackTrace();
-				}
+					}
 
+					System.out.println();
+				}
+			}
+		} catch (XPathExpressionException e) {
+			e.printStackTrace();
 		}
 
-		/**
-		 * List each subject with their objects
-		 * 
-		 * @param document
-		 */
-		public void listEachSubjectWithTheirObjects(Document document) {
+	}
 
-				System.out.println("\n\n*********List Subject with Their Objects**********");
+	/**
+	 * List each subject with their objects
+	 * 
+	 * @param document
+	 */
+	public void listEachSubjectWithTheirObjects(Document document) {
 
-				try {
-						document.getDocumentElement().normalize();
-						XPath xPath = XPathFactory.newInstance().newXPath();
-						String expression = "/filesystem/object/acl/ace";
-						NodeList objectNodeList = (NodeList) xPath.compile(expression).evaluate(document,
-						    XPathConstants.NODESET);
+		System.out.println("\n\n*********List Subject with Their Objects**********");
 
-						HashSet<String> users = new LinkedHashSet<String>();
-						// Run the process for all object nodes
-						for (int i = 0; i < objectNodeList.getLength(); i++) {
-								// Get the particular object node
-								Node aceNode = objectNodeList.item(i);
-								// Check if the node is an Element Node
-								if (aceNode.getNodeType() == Node.ELEMENT_NODE) {
-										// Cast the node to element to get the attributes
-										Element objectElement = (Element) aceNode;
-										users.add(objectElement.getAttribute("subject"));
-										// System.out.println();
-								}
-						}
+		try {
+			document.getDocumentElement().normalize();
+			XPath xPath = XPathFactory.newInstance().newXPath();
+			String expression = "/filesystem/object/acl/ace";
+			NodeList objectNodeList = (NodeList) xPath.compile(expression).evaluate(document,
+				XPathConstants.NODESET);
 
-						for (String user : users) {
-								expression = "/filesystem/object[acl/ace[@subject='" + user + "']]";
-								NodeList filteredObjectNodeList = (NodeList) xPath.compile(expression).evaluate(document,
-								    XPathConstants.NODESET);
-								
-								// Run the process for all object nodes
-								System.out.println("user:" + user);
-								for (int j = 0; j < filteredObjectNodeList.getLength(); j++) {
-										// Get the particular object node
-										Node objectNode = filteredObjectNodeList.item(j);
-										// Check if the node is an Element Node
-										if (objectNode.getNodeType() == Node.ELEMENT_NODE) {
-												// Cast the node to element to get the attributes
-												Element objectElement = (Element) objectNode;
-												System.out.println("----->object:" + objectElement.getAttribute("name"));
-										}
-								}
-						}
-				} catch (XPathExpressionException e) {
-						e.printStackTrace();
+			HashSet<String> users = new LinkedHashSet<String>();
+			// Run the process for all object nodes
+			for (int i = 0; i < objectNodeList.getLength(); i++) {
+				// Get the particular object node
+				Node aceNode = objectNodeList.item(i);
+				// Check if the node is an Element Node
+				if (aceNode.getNodeType() == Node.ELEMENT_NODE) {
+					// Cast the node to element to get the attributes
+					Element objectElement = (Element) aceNode;
+					users.add(objectElement.getAttribute("subject"));
+					// System.out.println();
 				}
+			}
 
+			for (String user : users) {
+				expression = "/filesystem/object[acl/ace[@subject='" + user + "']]";
+				NodeList filteredObjectNodeList = (NodeList) xPath.compile(expression).evaluate(document,
+					XPathConstants.NODESET);
+
+				// Run the process for all object nodes
+				System.out.println("user:" + user);
+				for (int j = 0; j < filteredObjectNodeList.getLength(); j++) {
+					// Get the particular object node
+					Node objectNode = filteredObjectNodeList.item(j);
+					// Check if the node is an Element Node
+					if (objectNode.getNodeType() == Node.ELEMENT_NODE) {
+						// Cast the node to element to get the attributes
+						Element objectElement = (Element) objectNode;
+						System.out.println("----->object:" + objectElement.getAttribute("name"));
+					}
+				}
+			}
+		} catch (XPathExpressionException e) {
+			e.printStackTrace();
 		}
 
-		/**
-		 * List each object that is own by the given subject
-		 * 
-		 * @param document
-		 */
-		public void listAllObjectsOwnsBy(Document document, String user) {
+	}
 
-				System.out.println("\n\n*********List All Objects Owns By " + user + "***********");
+	/**
+	 * List each object that is own by the given subject
+	 * 
+	 * @param document
+	 */
+	public void listAllObjectsOwnsBy(Document document, String user) {
 
-				try {
-						XPath xPath = XPathFactory.newInstance().newXPath();
-						// Xpath expression for select the given user with Own rights
-						String expression = "/filesystem/object[acl/ace[@subject='" + user
-						    + "' and contains(@rights,'o')]]";
-						NodeList filteredObjectNodeList = (NodeList) xPath.compile(expression).evaluate(document,
-						    XPathConstants.NODESET);
-						
-						System.out.println("user:" + user);
-						for (int j = 0; j < filteredObjectNodeList.getLength(); j++) {
-								// Get the particular object node
-								Node objectNode = filteredObjectNodeList.item(j);
-								// Check if the node is an Element Node
-								if (objectNode.getNodeType() == Node.ELEMENT_NODE) {
-										// Cast the node to element to get the attributes
-										Element objectElement = (Element) objectNode;
-										System.out.println("----->object:" + objectElement.getAttribute("name"));
-								}
-						}
+		System.out.println("\n\n*********List All Objects Owns By " + user + "***********");
 
-				} catch (XPathExpressionException e) {
-						e.printStackTrace();
+		try {
+			XPath xPath = XPathFactory.newInstance().newXPath();
+			// Xpath expression for select the given user with Own rights
+			String expression = "/filesystem/object[acl/ace[@subject='" + user
+				+ "' and contains(@rights,'o')]]";
+			NodeList filteredObjectNodeList = (NodeList) xPath.compile(expression).evaluate(document,
+				XPathConstants.NODESET);
+
+			System.out.println("user:" + user);
+			for (int j = 0; j < filteredObjectNodeList.getLength(); j++) {
+				// Get the particular object node
+				Node objectNode = filteredObjectNodeList.item(j);
+				// Check if the node is an Element Node
+				if (objectNode.getNodeType() == Node.ELEMENT_NODE) {
+					// Cast the node to element to get the attributes
+					Element objectElement = (Element) objectNode;
+					System.out.println("----->object:" + objectElement.getAttribute("name"));
 				}
+			}
 
+		} catch (XPathExpressionException e) {
+			e.printStackTrace();
 		}
 
-		/**
-		 * Return the read XML
-		 * 
-		 * @param fileName
-		 * @return
-		 */
-		public Document readXML(String fileName) {
-				try {
-						DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-						DocumentBuilder db = dbf.newDocumentBuilder();
-						InputStream file = ClassLoader.getSystemResourceAsStream(fileName);
-						Document d = db.parse(file);
-						return d;
-				} catch (Exception ex) {
-						System.out.println(ex.getMessage());
-						return null;
-				}
+	}
+
+	/**
+	 * Return the read XML
+	 * 
+	 * @param fileName
+	 * @return
+	 */
+	public Document readXML(String fileName) {
+		try {
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			DocumentBuilder db = dbf.newDocumentBuilder();
+			InputStream file = ClassLoader.getSystemResourceAsStream(fileName);
+			Document d = db.parse(file);
+			return d;
+		} catch (Exception ex) {
+			System.out.println(ex.getMessage());
+			return null;
 		}
+	}
 
 }
