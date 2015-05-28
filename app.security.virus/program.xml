@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<program>
+	<goto addr='0' toAddr='2' />
+	<mem addr='1' />
+	<loop addr='2' upperBound='2' />
+	<print addr='3' value='a' />
+	<loop addr='4' upperBound='2' />
+	<print addr='5' value='b' />
+	<endLoop addr='6' toAddr='4' />
+	<endLoop addr='7' toAddr='2' />
+	<stop addr='8' />
+</program>
